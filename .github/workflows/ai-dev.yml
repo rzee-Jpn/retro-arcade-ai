@@ -4,6 +4,9 @@ on:
   issues:
     types: [opened]
 
+permissions:
+  contents: write   # penting supaya bisa push
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,10 +26,11 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
 
-      - name: Commit result
+      - name: Commit AI result
         run: |
           git config user.name "AI Dev"
           git config user.email "ai@bot.com"
           git add .
-          git commit -m "AI generated update"
+          # commit hanya jika ada perubahan
+          git diff-index --quiet HEAD || git commit -m "AI generated update"
           git push
