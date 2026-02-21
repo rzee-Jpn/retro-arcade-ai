@@ -1,12 +1,12 @@
 const fs = require("fs");
+const applyAIChanges = require("./parser");
 
 const issue = process.env.ISSUE_BODY;
 const apiKey = process.env.OPENROUTER_API_KEY;
 
-const prompt = fs.readFileSync("ai/agent_prompt.md", "utf8");
+const prompt = fs.readFileSync("ai/system_prompt.md", "utf8");
 
 async function runAI() {
-
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -23,13 +23,9 @@ async function runAI() {
   });
 
   const data = await response.json();
+  const result = data.choices[0].message.content;
 
-  fs.writeFileSync(
-    "AI_OUTPUT.md",
-    data.choices[0].message.content
-  );
-
-  console.log("AI output saved.");
+  applyAIChanges(result);
 }
 
 runAI();
