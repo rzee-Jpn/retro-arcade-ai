@@ -1,13 +1,18 @@
+import Phaser from "phaser";
+
 export default class GameScene extends Phaser.Scene {
-  constructor(){
-    super("game");
+  constructor() {
+    super("GameScene");
   }
 
-  preload(){}
+  preload() {}
 
-  create(){
-    this.add.text(80,300,"AI Arcade Prototype");
+  create() {
+    this.add.text(100, 300, "AI Arcade Starter", {
+      fontSize: "20px",
+      fill: "#ffffff"
+    });
   }
 
-  update(){}
+  update() {}
 }
