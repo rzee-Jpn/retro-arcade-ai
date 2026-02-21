@@ -36,6 +36,8 @@ export default class GameScene extends Phaser.Scene {
       .setTint(0xffff00);
 
     this.player.setCollideWorldBounds(true);
+    this.player.setBounce(0.1);
+
     this.physics.add.collider(this.player, this.platforms);
 
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -47,9 +49,10 @@ export default class GameScene extends Phaser.Scene {
 
     this.enemy.setCollideWorldBounds(true);
     this.enemy.setBounce(1);
-    this.enemy.setVelocityX(80 + this.level * 20);
 
     this.physics.add.collider(this.enemy, this.platforms);
+
+    this.resetEnemySpeed();
 
     this.physics.add.overlap(
       this.player,
@@ -61,7 +64,6 @@ export default class GameScene extends Phaser.Scene {
 
     // ===== COLLECTIBLES =====
     this.collectibles = this.physics.add.group();
-
     this.spawnCollectibles();
 
     this.physics.add.overlap(
@@ -92,40 +94,58 @@ export default class GameScene extends Phaser.Scene {
   update() {
     if (!this.player.active) return;
 
-    // Movement
+    const speed = 150;
+
+    // Smooth horizontal control
     if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-150);
+      this.player.setVelocityX(-speed);
     } else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(150);
+      this.player.setVelocityX(speed);
     } else {
       this.player.setVelocityX(0);
     }
 
     // Jump
     if (this.cursors.up.isDown && this.player.body.touching.down) {
-      this.player.setVelocityY(-300);
+      this.player.setVelocityY(-320);
     }
   }
 
   spawnCollectibles() {
     for (let i = 0; i < 5; i++) {
-      const item = this.collectibles.create(
-        Phaser.Math.Between(50, 300),
-        Phaser.Math.Between(100, 500),
-        null
-      )
-      .setDisplaySize(15, 15)
-      .setTint(0xff0000);
+      const x = Phaser.Math.Between(40, 320);
+      const y = Phaser.Math.Between(120, 540);
+
+      const item = this.collectibles.create(x, y, null)
+        .setDisplaySize(15, 15)
+        .setTint(0xff0000);
 
       item.body.setAllowGravity(false);
     }
   }
 
   collectItem(player, item) {
+    const x = item.x;
+    const y = item.y;
+
     item.destroy();
 
     this.score += 10;
     this.scoreText.setText("Score: " + this.score);
+
+    // Floating score effect
+    const popup = this.add.text(x, y, "+10", {
+      fontSize: "14px",
+      fill: "#ffff00"
+    });
+
+    this.tweens.add({
+      targets: popup,
+      y: y - 30,
+      alpha: 0,
+      duration: 800,
+      onComplete: () => popup.destroy()
+    });
 
     if (this.collectibles.countActive() === 0) {
       this.nextLevel();
@@ -137,21 +157,33 @@ export default class GameScene extends Phaser.Scene {
     this.levelText.setText("Level: " + this.level);
 
     this.spawnCollectibles();
+    this.resetEnemySpeed();
+  }
 
-    // Increase enemy speed
-    const speed = 80 + this.level * 30;
-    this.enemy.setVelocityX(this.enemy.body.velocity.x > 0 ? speed : -speed);
+  resetEnemySpeed() {
+    const baseSpeed = 80;
+    const speed = baseSpeed + this.level * 30;
+
+    const direction = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
+
+    this.enemy.setVelocityX(speed * direction);
   }
 
   hitEnemy() {
     this.lives--;
     this.livesText.setText("Lives: " + this.lives);
 
+    // Knockback effect
+    const knock = this.player.x < this.enemy.x ? -200 : 200;
+    this.player.setVelocity(knock, -200);
+
     if (this.lives <= 0) {
       this.scene.restart();
     } else {
-      this.player.setPosition(180, 550);
-      this.player.setVelocity(0, 0);
+      this.time.delayedCall(500, () => {
+        this.player.setPosition(180, 550);
+        this.player.setVelocity(0, 0);
+      });
     }
   }
 }
