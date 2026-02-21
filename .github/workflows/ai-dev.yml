@@ -5,7 +5,7 @@ on:
     types: [opened]
 
 permissions:
-  contents: write   # penting supaya bisa push
+  contents: write
 
 jobs:
   build:
@@ -26,11 +26,13 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
 
+      - name: Build Test
+        run: npm run build
+
       - name: Commit AI result
         run: |
           git config user.name "AI Dev"
           git config user.email "ai@bot.com"
           git add .
-          # commit hanya jika ada perubahan
           git diff-index --quiet HEAD || git commit -m "AI generated update"
           git push
