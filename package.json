@@ -1,18 +1,15 @@
 {
-  "name": "retro-arcade-ai",
+  "name": "ai-arcade-game",
   "version": "1.0.0",
-  "type": "module",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
   "dependencies": {
-    "phaser": "^3.90.0",
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
     "vite": "^7.3.1"
   }
 }
