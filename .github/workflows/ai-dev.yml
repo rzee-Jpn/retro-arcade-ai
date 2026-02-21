@@ -1,0 +1,38 @@
+name: AI Dev Agent
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      - name: Run AI
+        run: node scripts/ai-dev.js
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+
+      - name: Build Test
+        run: npm run build
+
+      - name: Commit AI result
+        run: |
+          git config user.name "AI Dev"
+          git config user.email "ai@bot.com"
+          git add .
+          git diff-index --quiet HEAD || git commit -m "AI generated update"
+          git push
